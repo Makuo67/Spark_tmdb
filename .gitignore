@@ -1,0 +1,4 @@
+src/__pycache/
+src/debug_out
+.env
+data/
