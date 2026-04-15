@@ -2,3 +2,5 @@ src/__pycache__/
 src/debug_out
 .env
 data/
+src/api/__pycache__/
+src/helpers/__pycache__/
