@@ -1,17 +1,12 @@
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 import logging
-from spark_api import load_data_spark
+from src.api.spark_api import load_data_spark
 # ----------------------------
 # DROP IRRELEVANT COLUMNS
 # ----------------------------
 
 logger = logging.getLogger(__name__)
-
-
-def drop_irrelevant_columns(df: DataFrame) -> DataFrame:
-    cols_to_drop = ['adult', 'imdb_id', 'original_title', 'video', 'homepage']
-    return df.drop(*[c for c in cols_to_drop if c in df.columns])
 
 
 # ----------------------------
@@ -41,7 +36,6 @@ def extract_names_array(df: DataFrame, col_name: str, new_col: str) -> DataFrame
                 F.concat_ws("|", F.expr(f"transform({col_name}, x -> x.name)"))
             )
         )
-        .drop(col_name)
     )
 
 
@@ -160,6 +154,9 @@ def filter_rows(df: DataFrame) -> DataFrame:
 # ----------------------------
 # REORDER COLUMNS
 # ----------------------------
+logger = logging.getLogger(__name__)
+
+
 def reorder_columns(df: DataFrame) -> DataFrame:
     ordered_cols = [
         'id', 'title', 'tagline', 'release_date', 'genres',
@@ -171,7 +168,12 @@ def reorder_columns(df: DataFrame) -> DataFrame:
         'cast', 'cast_size', 'director', 'crew_size'
     ]
 
+    logger.info(f"DF columns: {df.columns}")
+
+    # DEBUG: full schema (VERY useful for nested issues)
+    logger.info(f"DF schema:\n{df._jdf.schema().treeString()}")
     existing_cols = [c for c in ordered_cols if c in df.columns]
+    logger.info(f"Selected columns: {existing_cols}")
     return df.select(*existing_cols)
 
 
@@ -183,16 +185,15 @@ def preprocess(df: DataFrame) -> DataFrame:
     Full preprocessing pipeline.
     Each step is isolated and composable.
     """
+    df = df.withColumnRenamed("genres", "genres_raw")
+    df = extract_names_array(df, "genres_raw", "genres")
 
-    df = drop_irrelevant_columns(df)
-
+    df = df.withColumnRenamed("production_companies",
+                              "production_companies_raw")
+    df = extract_names_array(
+        df, "production_companies_raw", "production_companies")
     # Extract nested JSON
     df = extract_collection(df)
-    df = extract_names_array(df, "genres", "genres")
-    df = extract_names_array(
-        df, "production_companies", "production_companies")
-    df = extract_names_array(
-        df, "production_countries", "production_countries")
     df = extract_spoken_languages(df)
 
     # Credits

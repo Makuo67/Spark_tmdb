@@ -1,6 +1,5 @@
 import os
 import logging
-import json
 from typing import Iterator, Dict, Any, List, Optional
 import requests
 from pydantic import BaseModel, ValidationError
@@ -366,6 +365,7 @@ def load_data_spark(
     })
 
     df = spark.createDataFrame(final_rdd, schema=schema)
+    logger.info(f"DF columns: {df.columns}")
 
     logger.info(f"Loaded {df.count()} movies out of {len(movie_ids)}")
 
