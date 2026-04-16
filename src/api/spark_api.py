@@ -8,7 +8,9 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 
 
+"""TMDB API loader for PySpark. Fetches movies in parallel RDDs with validation."""
 load_dotenv()
+
 
 # ----------------------------
 # CONFIG

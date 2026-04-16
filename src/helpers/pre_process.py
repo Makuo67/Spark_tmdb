@@ -1,3 +1,4 @@
+"""ETL pipeline: Extract nested JSON, clean data, output Parquet."""
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 import logging
@@ -244,5 +245,5 @@ if __name__ == "__main__":
     from pathlib import Path
 
     BASE_DIR = Path(__file__).resolve().parent.parent
-    OUTPUT_PATH = BASE_DIR / "data"
+    OUTPUT_PATH = BASE_DIR / "/Spark_tmdb/data"
     write_parquet_safe(df, str(OUTPUT_PATH))

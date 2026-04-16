@@ -1,9 +1,10 @@
+"""Entry point: Load processed data and run analytics/visuals."""
 from pyspark.sql import SparkSession
 from analytics import *
 
 spark = SparkSession.builder.getOrCreate()
 
-df = spark.read.parquet("../data")
+df = spark.read.parquet("Spark_tmdb/data")
 
 # KPIs
 kpis = best_worst_movies(df)
