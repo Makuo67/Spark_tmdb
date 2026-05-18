@@ -1,5 +1,6 @@
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame, Window
+from src.config import MIN_BUDGET_MUSD, MIN_VOTE_COUNT
 
 
 # ----------------------------
@@ -55,26 +56,28 @@ def best_worst_movies(df: DataFrame) -> dict:
         "lowest_profit": rank_within(df, "profit", keep_cols=["title", "genres", "profit", "rank"], desc=False).limit(10),
 
         "highest_roi": rank_within(
-            df.filter(F.col("budget_musd") >= 10), "title", "roi", keep_cols=["title", "genres", "roi", "rank"]
+            df.filter(F.col("budget_musd") >= MIN_BUDGET_MUSD), "roi",
+            keep_cols=["title", "genres", "roi", "rank"]
         ).limit(10),
 
         "lowest_roi": rank_within(
-            df.filter(F.col("budget_musd") >= 10), "title", "roi", keep_cols=["title", "genres", "roi", "rank"], desc=False
+            df.filter(F.col("budget_musd") >= MIN_BUDGET_MUSD), "roi",
+            keep_cols=["title", "genres", "roi", "rank"], desc=False
         ).limit(10),
 
-        "most_voted": rank_within(df, "title", "vote_count", keep_cols=["title", "genres", "vote_count", "rank"]).limit(10),
+        "most_voted": rank_within(df, "vote_count", keep_cols=["title", "genres", "vote_count", "rank"]).limit(10),
 
         "highest_rated": rank_within(
-            df.filter(F.col("vote_count") >= 10), "title", "vote_average", keep_cols=["title", "genres", "vote_average", "rank"]
+            df.filter(F.col("vote_count") >= MIN_VOTE_COUNT), "vote_average",
+            keep_cols=["title", "genres", "vote_average", "rank"]
         ).limit(10),
 
         "lowest_rated": rank_within(
-            df.filter(F.col("vote_count") >= 10), "title",
-            "vote_average", keep_cols=["title", "genres", "vote_average", "rank"],
-            desc=False
+            df.filter(F.col("vote_count") >= MIN_VOTE_COUNT), "vote_average",
+            keep_cols=["title", "genres", "vote_average", "rank"], desc=False
         ).limit(10),
 
-        "most_popular": rank_within(df, "title", "popularity", keep_cols=["title", "genres", "popularity", "rank"]).limit(10),
+        "most_popular": rank_within(df, "popularity", keep_cols=["title", "genres", "popularity", "rank"]).limit(10),
     }
 
 

@@ -3,6 +3,7 @@ import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 import logging
 from src.api.spark_api import load_data_spark
+from src.config import NULL_PLACEHOLDERS, DROPNA_THRESH
 # ----------------------------
 # DROP IRRELEVANT COLUMNS
 # ----------------------------
@@ -119,13 +120,11 @@ def handle_invalid_values(df: DataFrame) -> DataFrame:
         # Clean text placeholders
         .withColumn(
             "overview",
-            F.when(F.col("overview") == "No Data",
-                   None).otherwise(F.col("overview"))
+            F.when(F.col("overview").isin(NULL_PLACEHOLDERS), None).otherwise(F.col("overview"))
         )
         .withColumn(
             "tagline",
-            F.when(F.col("tagline") == "No Data",
-                   None).otherwise(F.col("tagline"))
+            F.when(F.col("tagline").isin(NULL_PLACEHOLDERS), None).otherwise(F.col("tagline"))
         )
     )
 
@@ -143,11 +142,8 @@ def filter_rows(df: DataFrame) -> DataFrame:
     # Keep only released movies
     df = df.filter(F.col("status") == "Released").drop("status")
 
-    # Keep rows with at least 10 non-null columns
-    df = df.filter(
-        F.col("id").isNotNull() &
-        F.col("title").isNotNull()
-    )
+    # Keep rows with at least DROPNA_THRESH non-null columns
+    df = df.na.drop(thresh=DROPNA_THRESH)
 
     return df
 
